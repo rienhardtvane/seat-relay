@@ -66,4 +66,4 @@ Or open `index.html` in a browser.
 
 ## About
 
-Built by Rienhardt van Eeden: football business and data, previously CRM, ticketing and fan data at STVV (Belgian Pro League), with an FBA Master's in Football Business. [LinkedIn](https://www.linkedin.com/in/rienhardtvane)
+Built by Rienhardt van Eeden: football business and data, previously CRM, ticketing and fan data at STVV (Belgian Pro League), with an FBA Master's in Football Business. [LinkedIn](https://www.linkedin.com/in/rienhardt-van-eeden/)
