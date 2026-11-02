@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
+<title>Seat Relay</title>
+</head>
+<body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: explainer column beside a working phone prototype; four views routed by hash, plus a club-side capacity panel. */
+:root{
+  --bg:#f3f1ef; --surface:#ffffff; --ink:#1b1517; --muted:#6b5f63; --line:#e2dbdc;
+  --accent:#c4122f; --accent-ink:#ffffff; --accent-soft:#fbe7ea;
+  --ok:#1f7a4d; --ok-soft:#e3f3ea; --warn:#a66300; --warn-soft:#fbefd9;
+  --phone:#141012; --phone-screen:#faf8f7;
+  --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141113; --surface:#1e191b; --ink:#f2ecee; --muted:#a8999e; --line:#352c30;
+  --accent:#ef3b55; --accent-ink:#ffffff; --accent-soft:#3a1a21;
+  --ok:#5cc792; --ok-soft:#183126; --warn:#f0b04a; --warn-soft:#3a2b12;
+  --phone:#000000; --phone-screen:#1a1517; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141113; --surface:#1e191b; --ink:#f2ecee; --muted:#a8999e; --line:#352c30;
+  --accent:#ef3b55; --accent-ink:#ffffff; --accent-soft:#3a1a21;
+  --ok:#5cc792; --ok-soft:#183126; --warn:#f0b04a; --warn-soft:#3a2b12;
+  --phone:#000000; --phone-screen:#1a1517; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 48px}
+.wrap{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) 390px;gap:48px;align-items:start}
+@media (max-width:900px){.wrap{grid-template-columns:minmax(0,1fr);gap:28px}}
+.concept{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);
+  border:1px solid var(--line);display:inline-block;padding:4px 8px;border-radius:3px}
+h1{font-family:var(--f-display);font-weight:800;font-size:clamp(56px,9vw,92px);line-height:.88;letter-spacing:-.01em;margin:18px 0 10px;text-transform:uppercase;text-wrap:balance}
+h1 em{font-style:normal;color:var(--accent)}
+.lede{font-size:18px;max-width:34em;margin:0 0 22px}
+h2{font-family:var(--f-display);font-weight:700;font-size:26px;text-transform:uppercase;letter-spacing:.01em;margin:0 0 8px}
+.explain{display:grid;gap:26px;min-width:0}
+.steps{display:grid;gap:0;border-top:2px solid var(--ink)}
+.step{display:grid;grid-template-columns:56px minmax(0,1fr);gap:12px;padding:14px 0;border-bottom:1px solid var(--line);cursor:pointer;background:none;border-left:0;border-right:0;border-top:0;text-align:left;color:inherit;font:inherit}
+.step:hover .step-t,.step[aria-current="true"] .step-t{color:var(--accent)}
+.step:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.step-n{font-family:var(--f-display);font-weight:800;font-size:34px;line-height:1;color:var(--muted)}
+.step[aria-current="true"] .step-n{color:var(--accent)}
+.step-t{display:block;font-family:var(--f-display);font-weight:700;font-size:20px;text-transform:uppercase;line-height:1.1}
+.step-d{display:block;color:var(--muted);font-size:14px;margin-top:3px;max-width:52ch}
+.evidence{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line)}
+@media (max-width:560px){.evidence{grid-template-columns:minmax(0,1fr)}}
+.ev{background:var(--surface);padding:14px}
+.ev b{font-family:var(--f-display);font-size:34px;font-weight:800;display:block;line-height:1;font-variant-numeric:tabular-nums}
+.ev span{font-size:13px;color:var(--muted);display:block;margin-top:6px}
+.ev a{color:var(--muted);font-size:11.5px;font-family:var(--f-mono)}
+.guard{font-size:14px;color:var(--muted);max-width:60ch;margin:0}
+.guard strong{color:var(--ink)}
+
+/* phone */
+.stage{position:sticky;top:20px;display:grid;gap:12px;justify-items:center}
+@media (max-width:900px){.stage{position:static}}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.tab{font-family:var(--f-mono);font-size:12px;padding:6px 10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:3px;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.phone{width:100%;max-width:370px;background:var(--phone);border-radius:42px;padding:12px;box-shadow:0 24px 60px -24px rgba(0,0,0,.45)}
+.screen{background:var(--phone-screen);border-radius:32px;height:720px;overflow:auto;position:relative}
+.sbar{display:flex;justify-content:space-between;padding:14px 22px 6px;font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.apphead{padding:4px 18px 12px;display:flex;justify-content:space-between;align-items:center}
+.wordmark{font-family:var(--f-display);font-weight:800;font-size:22px;text-transform:uppercase;letter-spacing:.02em}
+.wordmark i{font-style:normal;color:var(--accent)}
+.lang{display:flex;border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.lang button{font-family:var(--f-mono);font-size:11px;padding:3px 7px;background:none;border:0;color:var(--muted);cursor:pointer}
+.lang button[aria-pressed="true"]{background:var(--ink);color:var(--phone-screen)}
+.view{padding:0 16px 24px;display:grid;gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px}
+.fx{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.fx-t{font-family:var(--f-display);font-weight:700;font-size:24px;text-transform:uppercase;line-height:1}
+.mono{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.pill{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;padding:3px 7px;border-radius:99px;white-space:nowrap}
+.p-warn{background:var(--warn-soft);color:var(--warn)}
+.p-ok{background:var(--ok-soft);color:var(--ok)}
+.p-acc{background:var(--accent-soft);color:var(--accent)}
+.gem{border-left:3px solid var(--accent);padding:2px 0 2px 12px}
+.gem-l{font-family:var(--f-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);margin-bottom:4px}
+.gem p{margin:0;font-size:14.5px}
+.btn{display:block;width:100%;padding:13px;border-radius:10px;border:0;font-family:var(--f-display);font-weight:700;font-size:19px;text-transform:uppercase;letter-spacing:.03em;cursor:pointer}
+.btn-p{background:var(--accent);color:var(--accent-ink)}
+.btn-s{background:none;color:var(--ink);border:1px solid var(--line)}
+.btn:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.btn[disabled]{opacity:.5;cursor:default}
+.row{display:flex;justify-content:space-between;gap:10px;font-size:13.5px;padding:7px 0;border-bottom:1px dashed var(--line)}
+.row:last-child{border-bottom:0}
+.row b{font-variant-numeric:tabular-nums;font-weight:600}
+.scanstrip{display:flex;gap:3px;margin-top:8px}
+.scanstrip i{flex:1;height:22px;border-radius:2px;background:var(--line)}
+.scanstrip i.y{background:var(--ink)}
+.scanstrip i.r{background:var(--ok)}
+.legend{display:flex;gap:12px;font-family:var(--f-mono);font-size:10.5px;color:var(--muted);margin-top:6px;flex-wrap:wrap}
+.legend span::before{content:"";display:inline-block;width:8px;height:8px;border-radius:1px;margin-right:4px;vertical-align:0;background:var(--sw)}
+.done{text-align:center;padding:18px 14px}
+.done .big{font-family:var(--f-display);font-weight:800;font-size:44px;line-height:1;color:var(--ok);text-transform:uppercase}
+.timer{font-family:var(--f-display);font-size:40px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+/* relay year */
+.yr{background:var(--accent);color:var(--accent-ink);border-radius:16px;padding:18px;display:grid;gap:12px}
+.yr-k{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;opacity:.85}
+.yr-h{font-family:var(--f-display);font-weight:800;font-size:38px;line-height:.92;text-transform:uppercase}
+.yr-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.yr-grid div{border-top:1px solid rgba(255,255,255,.35);padding-top:6px}
+.yr-grid b{font-family:var(--f-display);font-size:36px;font-weight:800;display:block;line-height:1;font-variant-numeric:tabular-nums}
+.yr-grid span{font-size:12px;opacity:.9}
+.ask{display:flex;flex-wrap:wrap;gap:6px}
+.ask button{font-size:12.5px;padding:6px 10px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;font-family:var(--f-body)}
+.ask button:focus-visible{outline:2px solid var(--accent)}
+.answer{font-size:14px;min-height:3em}
+/* club panel */
+.club{display:grid;gap:10px}
+.bar{height:10px;background:var(--line);border-radius:99px;overflow:hidden;display:flex}
+.bar i{display:block;height:100%}
+.note{font-family:var(--f-mono);font-size:10.5px;color:var(--muted);line-height:1.45}
+@media (prefers-reduced-motion:no-preference){.flash{animation:fl .5s ease}@keyframes fl{from{transform:scale(.97);opacity:.6}to{transform:none;opacity:1}}}
+</style>
+
+<div class="wrap">
+  <section class="explain">
+    <div>
+      <span class="concept">Concept prototype · FC Bayern Fan AI-DEATION entry · not an official club product</span>
+      <h1>Seat <em>Relay</em></h1>
+      <p class="lede">Every Bayern home game turns away more members than it seats, yet season-ticket seats still sit empty when holders cannot make it and never get round to listing them. Seat Relay uses Gemini to get those seats to the members who lost the ballot, and rewards the holder for passing them on.</p>
+    </div>
+
+    <div>
+      <h2>How it works</h2>
+      <div class="steps" role="list">
+        <button class="step" data-go="holder" role="listitem"><span class="step-n">1</span><span><span class="step-t">Predict the empty seat</span><span class="step-d">A model scores each holder's chance of attending a fixture from their own turnstile history and the fixture context (kick-off time, competition, opponent). No one else's data is used.</span></span></button>
+        <button class="step" data-go="holder" role="listitem"><span class="step-n">2</span><span><span class="step-t">Gemini asks, personally</span><span class="step-d">Days before kick-off, likely no-shows get a short message in their own language with one-tap release to the official exchange. Holders who are coming ignore it and nothing happens.</span></span></button>
+        <button class="step" data-go="ballot" role="listitem"><span class="step-n">3</span><span><span class="step-t">The seat goes to a ballot loser</span><span class="step-d">Released seats are offered at face value to members who applied for this match and missed out, with a short window to accept.</span></span></button>
+        <button class="step" data-go="year" role="listitem"><span class="step-n">4</span><span><span class="step-t">Relay credit and Your Relay Year</span><span class="step-d">Holders earn credit toward cup and away allocation or a surprise upgrade into unused business seats. At season end Gemini writes each holder a shareable recap built only from their own data.</span></span></button>
+      </div>
+    </div>
+
+    <div>
+      <h2>Why it should work</h2>
+      <div class="evidence">
+        <div class="ev"><b>90→96%</b><span>Brentford season-ticket seat use after a release deadline and exchange credit, 2024/25.</span><a href="https://www.brentfordfc.com/en/news/club-news-every-seat-counts-mid-season-update-2024-25" target="_blank" rel="noopener">brentfordfc.com</a></div>
+        <div class="ev"><b>13,000+</b><span>Bundesliga holders in a field study: plain reminders failed, only a targeted, valuable incentive cut no-shows.</span><a href="https://essma.eu/news/filling-gaps-how-clubs-can-reduce-no-show-behaviour-their-stadiums/" target="_blank" rel="noopener">essma.eu</a></div>
+        <div class="ev"><b>350,000</b><span>Ticket requests for one 75,000-seat home match against Dortmund, per the CEO in August 2026.</span><a href="https://www.sport1.de/news/fussball/bundesliga/2026/08/absurder-ticket-boom-beim-fc-bayern" target="_blank" rel="noopener">sport1.de</a></div>
+      </div>
+    </div>
+
+    <p class="guard"><strong>Built to be fair and GDPR-safe.</strong> Opt-in only. The model runs on each holder's own scan history and only ever grants credit or upgrades; it never feeds cancellations or sanctions. No seat-neighbour or friend data is shown to anyone. Bayern publishes no no-show rate, so every number in the prototype is an illustrative example.</p>
+    <p class="guard"><strong>The data side.</strong> A no-show model on synthetic season-ticket data, with the targeting simulation and the Gemini prompt, is in the <a href="https://github.com/rienhardtvane/seat-relay" target="_blank" rel="noopener" style="color:var(--accent)">project repository</a>. Independent concept by Rienhardt van Eeden, not affiliated with FC Bayern München or Google.</p>
+  </section>
+
+  <aside class="stage">
+    <div class="tabs" role="tablist" aria-label="Prototype views">
+      <button class="tab" role="tab" id="t-holder" data-go="holder">Holder</button>
+      <button class="tab" role="tab" id="t-ballot" data-go="ballot">Ballot member</button>
+      <button class="tab" role="tab" id="t-year" data-go="year">Relay Year</button>
+      <button class="tab" role="tab" id="t-club" data-go="club">Club view</button>
+    </div>
+    <div class="phone">
+      <div class="screen" id="screen">
+        <div class="sbar"><span>18:42</span><span>5G ▮▮▮</span></div>
+        <div class="apphead">
+          <span class="wordmark">Seat <i>Relay</i></span>
+          <div class="lang" role="group" aria-label="Message language">
+            <button id="l-de" data-lang="de">DE</button><button id="l-en" data-lang="en">EN</button>
+          </div>
+        </div>
+        <div id="view" class="view" aria-live="polite"></div>
+      </div>
+    </div>
+    <p class="note" style="text-align:center;max-width:370px">Example data for a fictional holder. Tap through the flow; the language switch shows how Gemini localises each message.</p>
+  </aside>
+</div>
+
+<script>
+(function(){
+  var S={lang:"de",released:false,credit:4,accepted:false,qa:null};
+  var T={
+    de:{
+      nudgeLbl:"Nachricht von Gemini",
+      nudge:"Servus Lukas, Dienstagabend um 21 Uhr gegen Union ist bei dir zuletzt dreimal ausgefallen. Kannst du diesmal? Falls nicht: ein Tipp genügt, und dein Platz geht an ein Mitglied, das bei der Verlosung leer ausging. Du bekommst dafür 1 Relay-Punkt.",
+      rel:"Platz weitergeben", keep:"Ich komme",
+      doneH:"Platz weitergegeben", doneP:"Danke, Lukas. Block 112 geht an ein Mitglied von der Warteliste. +1 Relay-Punkt.",
+      keptP:"Alles klar, bis Dienstag. Wir fragen dich nicht nochmal für dieses Spiel.",
+      offerLbl:"Nachricht von Gemini",
+      offer:"Hallo Aylin, du hattest dich für Bayern gegen Union beworben und bei der Verlosung kein Glück. Gerade ist ein Dauerkarten-Platz frei geworden: Block 112, Reihe 18, zum Normalpreis. Du hast 30 Minuten zum Annehmen.",
+      acc:"Ticket annehmen", pass:"Weiter an die Nächste",
+      accH:"Du bist dabei", accP:"Das Ticket liegt in deiner App. Viel Spaß in der Arena, Aylin.",
+      yrK:"Saison 2026/27 · Dein Relay-Jahr",
+      yrH:"Du hast die Südkurve voller gemacht.",
+      story:"Du warst bei 14 von 17 Heimspielen, sechsmal schon über eine Stunde vor Anpfiff am Drehkreuz. Die drei Spiele, die du nicht geschafft hast, hast du weitergegeben, und drei Mitglieder von der Warteliste standen an deiner Stelle im Block. Dafür gab es im Pokal-Viertelfinale das Upgrade auf die Business Seats.",
+      askL:"Frag deine Saison",
+      q:[["Bestes Spiel?","Das 4:1 gegen Leverkusen im März. Du warst 72 Minuten vor Anpfiff drin und hast drei der vier Tore live gesehen."],["Wem habe ich Plätze gegeben?","Drei Mitgliedern, die bei der Verlosung leer ausgingen. Wer sie sind, zeigen wir nicht, aber alle drei sind gekommen."],["Wofür sind meine Punkte gut?","Mit 4 Relay-Punkten hast du Vorrang bei der nächsten Auswärtsverlosung oder ein Upgrade, wenn Business Seats frei bleiben."]]
+    },
+    en:{
+      nudgeLbl:"Message from Gemini",
+      nudge:"Hi Lukas, Tuesday-night 9pm kick-offs haven't worked for you lately; you missed the last three. Can you make Union? If not, one tap passes your seat to a member who lost the ballot, and you earn 1 relay credit.",
+      rel:"Pass my seat on", keep:"I'm going",
+      doneH:"Seat relayed", doneP:"Thanks, Lukas. Block 112 goes to a member from the waiting list. +1 relay credit.",
+      keptP:"Great, see you Tuesday. We won't ask again for this match.",
+      offerLbl:"Message from Gemini",
+      offer:"Hi Aylin, you applied for Bayern v Union and missed out in the ballot. A season-ticket seat has just come free: Block 112, Row 18, at face value. You have 30 minutes to accept.",
+      acc:"Accept ticket", pass:"Pass to next member",
+      accH:"You're in", accP:"The ticket is in your app. Enjoy the Arena, Aylin.",
+      yrK:"Season 2026/27 · Your Relay Year",
+      yrH:"You made the Südkurve fuller.",
+      story:"You made 14 of 17 home games, six times through the turnstile more than an hour before kick-off. The three you couldn't make, you passed on, and three members from the waiting list stood in your block instead. That earned you a business-seat upgrade for the cup quarter-final.",
+      askL:"Ask your season",
+      q:[["Best match?","The 4-1 against Leverkusen in March. You were in 72 minutes before kick-off and saw three of the four goals live."],["Who got my seats?","Three members who missed out in the ballot. We don't show who they are, but all three turned up."],["What are my credits for?","4 relay credits give you priority in the next away ballot, or an upgrade when business seats go unused."]]
+    }
+  };
+  var view=document.getElementById("view");
+  function scan(){
+    // 17 home games so far this season: y attended, r relayed, u upcoming
+    var s="yyyryyyyruuuuuuuu",o="";
+    for(var i=0;i<s.length;i++)o+='<i class="'+s[i]+'"></i>';
+    return o;
+  }
+  function holder(t){
+    var h='<div class="card"><div class="fx"><span class="fx-t">Bayern v Union</span><span class="pill p-warn">Likely miss</span></div>'+
+      '<div class="mono" style="margin-top:4px">Bundesliga · Tue 21:00 · Block 112 · Row 18 · Seat 9</div></div>';
+    if(!S.released&&S.kept!==true){
+      h+='<div class="card"><div class="gem"><div class="gem-l">'+t.nudgeLbl+'</div><p>'+t.nudge+'</p></div></div>'+
+        '<button class="btn btn-p" id="b-rel">'+t.rel+'</button><button class="btn btn-s" id="b-keep">'+t.keep+'</button>';
+    }else if(S.released){
+      h+='<div class="card done flash"><div class="big">'+t.doneH+'</div><p style="margin:8px 0 0">'+t.doneP+'</p></div>';
+    }else{
+      h+='<div class="card done flash"><p style="margin:0">'+t.keptP+'</p></div>';
+    }
+    h+='<div class="card"><div class="fx"><strong>Why you got this</strong><span class="mono">your data only</span></div>'+
+      '<div class="row"><span>Tue/Wed 21:00 home games scanned</span><b>0 of last 3</b></div>'+
+      '<div class="row"><span>Weekend home games scanned</span><b>6 of 6</b></div>'+
+      '<div class="row"><span>Relay credit</span><b>'+S.credit+'</b></div>'+
+      '<div class="scanstrip" aria-label="Season attendance strip">'+scan()+'</div>'+
+      '<div class="legend"><span style="--sw:var(--ink)">attended</span><span style="--sw:var(--ok)">relayed</span><span style="--sw:var(--line)">upcoming</span></div></div>'+
+      '<p class="note">Holders who are coming are never penalised. The score only decides who gets asked.</p>';
+    view.innerHTML=h;
+    var r=document.getElementById("b-rel"),k=document.getElementById("b-keep");
+    if(r)r.onclick=function(){S.released=true;S.credit=5;render();};
+    if(k)k.onclick=function(){S.kept=true;render();};
+  }
+  function ballot(t){
+    var h='<div class="card"><div class="fx"><span class="fx-t">Seat available</span><span class="pill p-acc">Ballot: missed</span></div>'+
+      '<div class="mono" style="margin-top:4px">Bayern v Union · Block 112 · Row 18 · €62 face value</div></div>';
+    if(!S.accepted){
+      h+='<div class="card"><div class="gem"><div class="gem-l">'+t.offerLbl+'</div><p>'+t.offer+'</p></div></div>'+
+        '<div class="card" style="text-align:center"><div class="timer" id="clock">29:41</div><div class="mono">left to accept</div></div>'+
+        '<button class="btn btn-p" id="b-acc">'+t.acc+'</button><button class="btn btn-s" id="b-pass">'+t.pass+'</button>';
+    }else{
+      h+='<div class="card done flash"><div class="big">'+t.accH+'</div><p style="margin:8px 0 0">'+t.accP+'</p></div>';
+    }
+    h+='<div class="card"><div class="row"><span>Who gets offered first</span><b>Applied for this match</b></div>'+
+      '<div class="row"><span>Price</span><b>Face value only</b></div>'+
+      '<div class="row"><span>If no reply</span><b>Next member in queue</b></div></div>';
+    view.innerHTML=h;
+    var a=document.getElementById("b-acc"),p=document.getElementById("b-pass");
+    if(a)a.onclick=function(){S.accepted=true;render();};
+    if(p)p.onclick=function(){p.disabled=true;p.textContent=S.lang==="de"?"Weitergegeben":"Passed on";};
+  }
+  function year(t){
+    var h='<div class="yr"><div class="yr-k">'+t.yrK+'</div><div class="yr-h">'+t.yrH+'</div>'+
+      '<div class="yr-grid"><div><b>14</b><span>'+(S.lang==="de"?"Heimspiele vor Ort":"home games in the Arena")+'</span></div>'+
+      '<div><b>3</b><span>'+(S.lang==="de"?"Plätze weitergegeben":"seats relayed to members")+'</span></div>'+
+      '<div><b>31</b><span>'+(S.lang==="de"?"Tore live gesehen":"goals seen live")+'</span></div>'+
+      '<div><b>1</b><span>'+(S.lang==="de"?"Business-Upgrade":"business-seat upgrade")+'</span></div></div></div>'+
+      '<div class="card"><div class="gem"><div class="gem-l">Written by Gemini from your season</div><p>'+t.story+'</p></div></div>'+
+      '<div class="card"><strong>'+t.askL+'</strong><div class="ask" style="margin-top:8px">';
+    t.q.forEach(function(q,i){h+='<button data-q="'+i+'">'+q[0]+'</button>';});
+    h+='</div><p class="answer" id="ans">'+(S.qa!=null?t.q[S.qa][1]:'')+'</p></div>'+
+      '<p class="note">Built only from this holder\'s own scans and relays. No seat neighbours, no friends\' behaviour.</p>';
+    view.innerHTML=h;
+    view.querySelectorAll("[data-q]").forEach(function(b){b.onclick=function(){S.qa=+b.dataset.q;document.getElementById("ans").textContent=t.q[S.qa][1];};});
+  }
+  function club(){
+    var fx=[["Union","Tue 21:00",2140,1720,1655],["Freiburg","Sat 15:30",610,450,441],["Dortmund","Sat 18:30",180,150,150],["Mainz","Wed 20:30",1890,1480,1402]];
+    var h='<div class="card"><div class="fx"><span class="fx-t">Club view</span><span class="pill p-ok">Illustrative</span></div>'+
+      '<div class="mono" style="margin-top:4px">Predicted empty season-ticket seats per fixture, before and after Relay</div></div><div class="club">';
+    fx.forEach(function(f){
+      var pct=Math.round(f[4]/f[2]*100);
+      h+='<div class="card"><div class="fx"><strong>v '+f[0]+'</strong><span class="mono">'+f[1]+'</span></div>'+
+        '<div class="row"><span>Predicted no-shows</span><b>'+f[2].toLocaleString("en")+'</b></div>'+
+        '<div class="row"><span>Released after nudge</span><b>'+f[3].toLocaleString("en")+'</b></div>'+
+        '<div class="row"><span>Filled by ballot members</span><b>'+f[4].toLocaleString("en")+' ('+pct+'%)</b></div>'+
+        '<div class="bar" aria-hidden="true"><i style="width:'+pct+'%;background:var(--ok)"></i><i style="width:'+(Math.round(f[3]/f[2]*100)-pct)+'%;background:var(--warn)"></i></div></div>';
+    });
+    h+='</div><p class="note">Midweek late kick-offs drive most predicted no-shows, so that is where nudges go. All figures are made up for the demo; Bayern does not publish no-show data.</p>';
+    view.innerHTML=h;
+  }
+  var views={holder:holder,ballot:ballot,year:year,club:club};
+  function current(){var h=(location.hash||"").slice(1);return views[h]?h:"holder";}
+  function render(){
+    var v=current(),t=T[S.lang];
+    views[v](t);
+    document.querySelectorAll(".tab").forEach(function(b){b.setAttribute("aria-selected",b.dataset.go===v?"true":"false");});
+    document.querySelectorAll(".step").forEach(function(b){b.setAttribute("aria-current",b.dataset.go===v?"true":"false");});
+    document.querySelectorAll(".lang button").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.lang===S.lang?"true":"false");});
+  }
+  document.querySelectorAll("[data-go]").forEach(function(b){b.addEventListener("click",function(){
+    if(location.hash.slice(1)===b.dataset.go)render();else location.hash=b.dataset.go;
+    document.getElementById("screen").scrollTop=0;
+  });});
+  document.querySelectorAll(".lang button").forEach(function(b){b.onclick=function(){S.lang=b.dataset.lang;render();};});
+  window.addEventListener("hashchange",render);
+  // countdown
+  var sec=29*60+41;
+  setInterval(function(){if(sec>0)sec--;var c=document.getElementById("clock");if(c){c.textContent=Math.floor(sec/60)+":"+String(sec%60).padStart(2,"0");}},1000);
+  render();
+})();
+</script>
+</body>
+</html>
